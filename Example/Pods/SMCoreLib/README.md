@@ -1,4 +1,4 @@
-# SMSyncServer.iOSFramework
+# SMCoreLib
 
 ## Example
 
@@ -8,12 +8,12 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 ## Installation
 
-SMSyncServer.iOSFramework is available through [CocoaPods](http://cocoapods.org). To install
+SMCoreLib is available through a private [CocoaPod](http://cocoapods.org). To install
 it, add the following lines to your Podfile:
 
 ```ruby
 source https://github.com/crspybits/Specs.git
-pod "SMSyncServer.iOSFramework"
+pod "SMCoreLib"
 ```
 
 ## Author
@@ -22,4 +22,4 @@ Christopher Prince, chris@SpasticMuffin.biz
 
 ## License
 
-SMSyncServer.iOSFramework is available under the GPL3 license. See the LICENSE file for more info.
+SMCoreLib is available under the GPL3 license. See the LICENSE.txt file for more info.
