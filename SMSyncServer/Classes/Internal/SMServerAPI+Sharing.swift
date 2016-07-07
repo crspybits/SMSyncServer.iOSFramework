@@ -38,7 +38,7 @@ internal extension SMServerAPI {
         
         #if !DEBUG
             if capabilities == nil || capabilities!.count == 0 {
-                completion?(authorizationCode: nil,
+                completion?(invitationCode: nil,
                     apiResult: SMServerAPIResult(returnCode: nil,
                         error: Error.Create("There were no capabilities!")))
                 return
