@@ -13,7 +13,7 @@ it, add the following lines to your Podfile:
 
 ```ruby
 source https://github.com/crspybits/Specs.git
-pod "SMSyncServer.iOSFramework"
+pod "SMSyncServer"
 ```
 
 ## Author
