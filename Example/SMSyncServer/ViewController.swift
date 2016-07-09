@@ -7,12 +7,15 @@
 //
 
 import UIKit
+import SMCoreLib
 
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        let bundle = NSBundle(forClass: ViewController.self)
+        Log.msg("bundle: \(bundle)")
     }
 
     override func didReceiveMemoryWarning() {
