@@ -757,8 +757,8 @@
 		37625135C59EF0C0B2C944D48E98575E /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D82B7A4C730C6D9ADFEDDDE1385963EF /* Internal */,
 				6A8AEB95B2650EDD546B9DC7D10BA438 /* Public */,
+				D82B7A4C730C6D9ADFEDDDE1385963EF /* Internal */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
