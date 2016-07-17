@@ -21,7 +21,7 @@ public struct SMLinkedAccount {
     // This is the userId assigned by the sync server, not by the specific account system.
     public var internalUserId:SMInternalUserId
     public var userName:String?
-    public var capabilityMask:SMSharingUserCapabilityMask
+    public var sharingType:SMSharingType
 }
 
 public enum SMUserType : Equatable {
@@ -209,7 +209,11 @@ public class SMSyncServerUser {
         }
     }
     
+    public func createSharingInvitation(sharingType:SMSharingType, userCreds:SMUserCredentials?=nil, completion:((invitationCode:String?, error:NSError?)->(Void))?) {
+    }
+    
     // Optionally can have a currently signed in user. i.e., if you give userCreds, they will be used. Otherwise, the currently signed in user creds are used.
+    // If there is no error on redeeming the invitation, the sign in callbacks are called.
     public func redeemSharingInvitation(invitationCode invitationCode:String, userCreds:SMUserCredentials?=nil, completion:((linkedOwningUserId:SMInternalUserId?, error: NSError?)->())?) {
         
         var userCredParams:[String:AnyObject]

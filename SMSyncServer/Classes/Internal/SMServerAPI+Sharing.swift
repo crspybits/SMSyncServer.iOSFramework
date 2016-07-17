@@ -12,24 +12,11 @@ import Foundation
 import SMCoreLib
 
 internal extension SMServerAPI {
-
+    
     // Create sharing invitation of current owning user's cloud storage data.
     // An owning user must currently be signed in. Doesn't require a lock. The capabilities must not be empty.
-    // capabilities is an optional value only to allow for error case testing on the server. In production builds, it *must* not be nil.
-    internal func createSharingInvitation(capabilities capabilities:SMSharingUserCapabilityMask?, completion:((invitationCode:String?, apiResult:SMServerAPIResult)->(Void))?) {
-        
-        var capabilitiesStringArray:[String]?
-        if capabilities != nil {
-            capabilitiesStringArray = capabilities!.stringArray
-        }
- 
-        self.createSharingInvitation(capabilities: capabilitiesStringArray) { (invitationCode, apiResult) in
-            completion?(invitationCode: invitationCode, apiResult: apiResult)
-        }
-    }
-    
-    // This is only marked as "internal" (and not private) for testing purposes. In regular (non-testing code), call the method above.
-    internal func createSharingInvitation(capabilities capabilities:[String]?, completion:((invitationCode:String?, apiResult:SMServerAPIResult)->(Void))?) {
+    // sharingType is an optional value only to allow for error case testing on the server. In production builds, it *must* not be nil and must be the .rawValue of an SMSharingType
+    internal func createSharingInvitation(sharingType sharingType: String?, completion:((invitationCode:String?, apiResult:SMServerAPIResult)->(Void))?) {
 
         let userParams = self.userDelegate.userCredentialParams
         Assert.If(nil == userParams, thenPrintThisString: "No user server params!")
@@ -37,15 +24,15 @@ internal extension SMServerAPI {
         var parameters = userParams!
         
         #if !DEBUG
-            if capabilities == nil || capabilities!.count == 0 {
+            if sharingType == nil {
                 completion?(invitationCode: nil,
                     apiResult: SMServerAPIResult(returnCode: nil,
-                        error: Error.Create("There were no capabilities!")))
+                        error: Error.Create("There was no sharingType!")))
                 return
             }
         #endif
     
-        parameters[SMServerConstants.userCapabilities] = capabilities
+        parameters[SMServerConstants.sharingType] = sharingType
         
         let serverOpURL = NSURL(string: self.serverURLString +
                         "/" + SMServerConstants.operationCreateSharingInvitation)!
@@ -66,9 +53,15 @@ internal extension SMServerAPI {
         }
     }
     
+    struct SMSharingInvitationContents {
+        var expiryDate: NSDate
+        var owningUser: String
+        var sharingType: SMSharingType
+    }
+    
     // This method is really just for testing. It's useful for looking up invitation info to make sure the invitation was stored on the server in its database.
     // You can only lookup invitations that you own/have sent. i.e., you can't lookup other people's invitations.
-    internal func lookupSharingInvitation(invitationCode invitationCode:String, completion:((invitationContents:[String:AnyObject]?, apiResult:SMServerAPIResult)->(Void))?) {
+    internal func lookupSharingInvitation(invitationCode invitationCode:String, completion:((invitationContents:SMSharingInvitationContents?, apiResult:SMServerAPIResult)->(Void))?) {
 
         let userParams = self.userDelegate.userCredentialParams
         Assert.If(nil == userParams, thenPrintThisString: "No user server params!")
@@ -84,11 +77,32 @@ internal extension SMServerAPI {
             
             var result = self.initialServerResponseProcessing(serverResponse, error: error)
             
-            var invitationContents:[String:AnyObject]?
+            var invitationContents:SMSharingInvitationContents?
+            
             if nil == result.error {
-                invitationContents = serverResponse![SMServerConstants.resultInvitationContentsKey] as? [String:AnyObject]
-                if nil == invitationContents {
+                var invitationContentsDict:[String:AnyObject]? = serverResponse![SMServerConstants.resultInvitationContentsKey] as? [String:AnyObject]
+                if nil == invitationContentsDict {
                     result.error = Error.Create("Didn't get Sharing Invitation Contents back from server")
+                }
+                else {
+                    if let expiryDateString = invitationContentsDict![SMServerConstants.invitationExpiryDate] as? String,
+                        let owningUser = invitationContentsDict![SMServerConstants.invitationOwningUser] as? String,
+                        let sharingTypeString = invitationContentsDict![SMServerConstants.invitationSharingType] as? String,
+                        let sharingType = SMSharingType(rawValue:sharingTypeString) {
+                        
+                        let dateFormatter = NSDateFormatter()
+                        // 2016-07-10T02:00:59.930Z
+                        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+                        if let expiryDate = dateFormatter.dateFromString(expiryDateString) {
+                            invitationContents = SMSharingInvitationContents(expiryDate: expiryDate, owningUser: owningUser, sharingType: sharingType)
+                        }
+                        else {
+                            result.error = Error.Create("Problem with date format: \(expiryDateString)!")
+                        }
+                    }
+                    else {
+                        result.error = Error.Create("Problem with invitation contents!")
+                    }
                 }
             }
             
@@ -160,10 +174,11 @@ internal extension SMServerAPI {
                     for dict in dictArray {
                         if let internalUserId = dict[SMServerConstants.internalUserId] as? String,
                             let userName = dict[SMServerConstants.accountUserName] as? String,
-                            let capabilities =  dict[SMServerConstants.accountCapabilities] as? [String],
-                            let capabilityMask = SMSharingUserCapabilityMask(capabilityNameArray:capabilities)  {
+                            let sharingType = dict[SMServerConstants.sharingType] as? String,
+                            let sharingTypeEnum = SMSharingType(rawValue: sharingType)  {
                             
-                            let linkedAccount = SMLinkedAccount(internalUserId: internalUserId, userName: userName, capabilityMask: capabilityMask)
+                            let linkedAccount = SMLinkedAccount(internalUserId: internalUserId, userName: userName, sharingType: sharingTypeEnum)
+                            
                             linkedAccounts.append(linkedAccount)
                         }
                         else {

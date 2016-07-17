@@ -532,7 +532,7 @@ public class SMSyncServer : NSObject {
             return SMMaskUtilities.maskDescription(stringArray: self.stringArray)
         }
         
-        // An array of capability strings, possibly empty.
+        // An array of reset strings, possibly empty.
         public var stringArray: [String] {
             return SMMaskUtilities.maskArrayOfStrings(self) { (maskObj:ErrorResetMask, enumValue:ErrorReset) -> Bool in
                 return maskObj.contains(ErrorResetMask(enumValue))

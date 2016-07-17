@@ -218,19 +218,12 @@ public class SMServerConstants {
     
     // MARK: Parameters sent in sharing operations
     // Key:
-    public static let userCapabilities = "UserCapabilities"
-    // Values:
-    // A (possibly empty) array of capability strings. See SMSharingUserCapabilityMask.
-    // The ordering of elements in the following array is utilized in SMSharingUserCapabilityMask. Be careful about changing the order!
-    // The syntax for the following array conveniently works in both Swift and Javascript!!
-    public static let possibleUserCapabilityValues = ["Create", "Read", "Update", "Delete", "Invite"]
-    
-        // These are redundant with that above, but needed to give individual capabilities on the server-side.
-        public static let capabilityCreate = "Create"
-        public static let capabilityRead = "Read"
-        public static let capabilityUpdate = "Update"
-        public static let capabilityDelete = "Delete"
-        public static let capabilityInvite = "Invite"
+    public static let sharingType = "SharingType"
+    // Values: String, one of the following:
+
+        public static let sharingDownloader = "Downloader"
+        public static let sharingUploader = "Uploader"
+        public static let sharingAdmin = "Admin"
     
     // MARK Keys both sent to the server and received back from the server.
 
@@ -303,8 +296,8 @@ public class SMServerConstants {
         // Value: A unique id for the owning user.
         
         // SubKey:
-        public static let invitationCapabilities = "Capabilities"
-        // Value: An array of capability names. See SMSharingUserCapabilityMask.
+        public static let invitationSharingType = "SharingType"
+        // Value: A string. See SMSharingType.
     
     // Key:
     public static let resultOperationStatusCountKey = "ServerOperationStatusCount"
@@ -322,8 +315,8 @@ public class SMServerConstants {
         // public static let accountUserName = "UserName" // already defined
     
         // SubKey:
-        public static let accountCapabilities = "AccountCapabilities"
-        // Value: Array of capability strings.
+        public static let accountSharingType = "SharingType"
+        // Value: A string. See SMSharingType.
     
     // MARK: Server result codes (rc's)
     

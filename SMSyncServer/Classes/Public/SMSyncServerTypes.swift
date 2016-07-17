@@ -13,84 +13,12 @@ import SMCoreLib
 
 public typealias SMInternalUserId = String
 
-// Modified from http://www.swift-studies.com/blog/2015/6/17/exploring-swift-20-optionsettypes
-public struct SMSharingUserCapabilityMask : OptionSetType {
-    private enum UserCapability : Int, CustomStringConvertible {
-        case Create /* Objects */ = 1
-        case Read /* Objects */ = 2
-        case Update /* Objects */ = 4
-        case Delete /* Objects */ = 8
-        case Invite /* New users to share */ = 16
-        
-        // Upload-- Create for new versions of files; Update for existing versions.
-        // Download-- Read
-        // Invite-- Other users to share
-        // Delete-- delete files
-        
-        private init?(capabilityName: String) {
-            var rawValue = 1
-            for name in UserCapability.allAsStrings {
-                if name == capabilityName {
-                    self = UserCapability(rawValue: rawValue)!
-                    return
-                }
-                rawValue = rawValue << 1
-            }
-            
-            Log.error("Unknown capabilityName: \(capabilityName)")
-            
-            return nil
-        }
-        
-        private static var allAsStrings:[String] {
-            // We depend here on the ordering and values of elements in the following array!
-            return SMServerConstants.possibleUserCapabilityValues
-        }
-        
-        private var description : String {
-            return SMMaskUtilities.enumDescription(rawValue: self.rawValue, allAsStrings: UserCapability.allAsStrings)
-        }
-    }
+public enum SMSharingType : String {
+    // Can do file-download and download-deletion, but no upload or invite. This a "read-only" style of access.
+    case Downloader
     
-    public let rawValue : Int
-    public init(rawValue:Int){ self.rawValue = rawValue}
-    private init(_ enumValue:UserCapability) {
-        self.rawValue = enumValue.rawValue
-    }
-    
-    public init?(capabilityNameArray:[String]) {
-        var mask = SMSharingUserCapabilityMask()
-        
-        for capabilityName in capabilityNameArray {
-            if let capabilityEnum = UserCapability(capabilityName: capabilityName) {
-                mask.insert(SMSharingUserCapabilityMask(capabilityEnum))
-            }
-            else {
-                return nil
-            }
-        }
-        
-        self = mask
-    }
-
-    public static let Create = SMSharingUserCapabilityMask(.Create)
-    public static let Read = SMSharingUserCapabilityMask(.Read)
-    public static let Update = SMSharingUserCapabilityMask(.Update)
-    public static let Delete = SMSharingUserCapabilityMask(.Delete)
-    public static let CRUD:SMSharingUserCapabilityMask = [.Create, .Read, .Update, .Delete]
-    public static let Invite = SMSharingUserCapabilityMask(UserCapability.Invite)
-    public static let ALL:SMSharingUserCapabilityMask = [.CRUD, .Invite]
-    
-    public var description : String {
-        return SMMaskUtilities.maskDescription(stringArray: self.stringArray)
-    }
-    
-    // An array of capability strings, possibly empty.
-    public var stringArray: [String] {
-        return SMMaskUtilities.maskArrayOfStrings(self) { (maskObj:SMSharingUserCapabilityMask, enumValue:UserCapability) -> Bool in
-            return maskObj.contains(SMSharingUserCapabilityMask(enumValue))
-        }
-    }
+    case Uploader // All operations except for inviting.
+    case Admin // All operations.
 }
 
 public enum SMSyncClientAPIError: ErrorType {

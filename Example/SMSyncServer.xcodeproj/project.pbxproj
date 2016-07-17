@@ -124,6 +124,7 @@
 				607FACCE1AFB9204008FA782 /* Resources */,
 				56F2214CD8B480745ED21DD7 /* [CP] Embed Pods Frameworks */,
 				4A603052824A22021387396E /* [CP] Copy Pods Resources */,
+				83102F9D1D3B17B1009B3188 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -210,6 +211,19 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SMSyncServer_Example/Pods-SMSyncServer_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		83102F9D1D3B17B1009B3188 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "../../../Server/Code/Scripts/makeServerConstants.sh ../SMSyncServer/Classes/Internal/SMServerConstants.swift ../../../Server/Code/ServerConstants.js";
 		};
 		FDE928473D15569EB285E26C /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
