@@ -131,6 +131,8 @@ internal class SMSyncControl {
         The completion, if given, is called: a) just before returning on error or not getting lock, or b) just after getting the lock.
     */
     internal func nextSyncOperation(completion:(()->())?=nil) {
+        Log.msg("nextSyncOperation: \(self.mode)")
+      
         switch self.mode {
         case .InternalError, .NonRecoverableError, .ResettingFromError:
             // Don't call self.syncControlModeChange because that will cause a call to stopOperating(), which will fail. Just report this above as an error.
@@ -280,6 +282,8 @@ internal class SMSyncControl {
         
         SMServerAPI.session.cleanup() { apiResult in
             if nil == apiResult.error {
+                Log.msg("Succeeded on cleanup!")
+                
                 // One result of successfully calling server cleanup is that we won't have the server lock any more.
                 self.haveServerLock = false
                 
@@ -291,6 +295,8 @@ internal class SMSyncControl {
                     self.doNextUploadOrStop()
                 }
                 
+                Log.msg("About to call completion: \(completion)")
+
                 completion?(error: nil)
             }
             else {
