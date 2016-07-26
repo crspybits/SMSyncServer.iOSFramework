@@ -25,7 +25,7 @@ public class SMUserSignInManager {
     private var _lazyCurrentUser:SMLazyWeakRef<SMUserSignInAccount>!
 
     private init() {
-        SharingInvitations.session.callback = { invitationCode, userName in
+        SMSharingInvitations.session.callback = { invitationCode, userName in
             self.delegate?.didReceiveSharingInvitation(self, invitationCode: invitationCode, userName: userName)
         }
         
@@ -88,7 +88,7 @@ public class SMUserSignInManager {
             }
         }
                
-        if SharingInvitations.session.application(application, openURL: url, sourceApplication: sourceApplication, annotation: annotation) {
+        if SMSharingInvitations.session.application(application, openURL: url, sourceApplication: sourceApplication, annotation: annotation) {
             return true
         }
         
@@ -97,55 +97,74 @@ public class SMUserSignInManager {
 }
 
 // Enable non-owning (e.g., Facebook) users to access sync server data.
-
-// Handles urls of the form: <BundleId>.invitation://?code=<UUID>&username=<UserName>
-// code needs to be first query param, and username needs to be second (if given).
-// Username can be an email address, or other string descriptively identifying the user.
-// TODO: Should we restrict the set of characters that can be in a username?
-private class SharingInvitations {
+public class SMSharingInvitations {
     private let queryItemAuthorizationCode = "code"
     private let queryItemUserName = "username"
     
-    // The upper/lower case sense of this is ignored.
-    private var urlScheme:String
-    
-    private static let session = SharingInvitations()
+    private static let session = SMSharingInvitations()
     
     // Called when it gets an invitation.
     private var callback:((invitationCode:String, userName:String?)->())?
     
+    // The upper/lower case sense of this is ignored.
+    static let urlScheme = SMIdentifiers.session().APP_BUNDLE_IDENTIFIER() + ".invitation"
+    
     private init() {
-        self.urlScheme = SMIdentifiers.session().APP_BUNDLE_IDENTIFIER() + ".invitation"
+    }
+    
+    // This URL/String is suitable for sending in an email to the person being invited.
+    // Handles urls of the form: 
+    //      <BundleId>.invitation://?code=<InvitationCode>&username=<UserName>
+    //      where <BundleId> is something like biz.SpasticMuffin.SharedNotes
+    // code needs to be first query param, and username needs to be second (if given).
+    // Username can be an email address, or other string descriptively identifying the user.
+    // TODO: Should we restrict the set of characters that can be in a username?
+    public static func createSharingURL(invitationCode invitationCode:String, username:String?) -> String {
+    
+        var usernameParam = ""
+        if username != nil {
+            if let escapedUserName = username!.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding) {
+                usernameParam = "&username=" + escapedUserName
+            }
+        }
+        
+        let urlString = self.urlScheme + "://?code=" + invitationCode + usernameParam
+        
+        return urlString
     }
     
     // Returns true iff can handle the url.
     private func application(application: UIApplication!, openURL url: NSURL!, sourceApplication: String!, annotation: AnyObject!) -> Bool {
         Log.msg("url: \(url)")
         
+        var returnResult = false
+        
         // Use case insensitive comparison because the incoming url scheme will be lower case.
-        if url.scheme.caseInsensitiveCompare(self.urlScheme) == NSComparisonResult.OrderedSame {
+        if url.scheme.caseInsensitiveCompare(SMSharingInvitations.urlScheme) == NSComparisonResult.OrderedSame {
             if let components = NSURLComponents(URL: url, resolvingAgainstBaseURL: false) {
                 Log.msg("components.queryItems: \(components.queryItems)")
-                if components.queryItems != nil && components.queryItems!.count == 2 {
+                if components.queryItems != nil {
                     let queryItemCode = components.queryItems![0]
                     if queryItemCode.name == self.queryItemAuthorizationCode && queryItemCode.value != nil  {
                         Log.msg("queryItemCode.value: \(queryItemCode.value!)")
                         
-                        let queryItemUserName = components.queryItems![1]
+                        var username:String?
+                        
+                        if components.queryItems!.count == 2 {
+                            let queryItemUserName = components.queryItems![1]
 
-                        if queryItemUserName.name == self.queryItemUserName && queryItemUserName.value != nil {
-                            Log.msg("queryItemUserName.value: \(queryItemUserName.value!)")
+                            if queryItemUserName.name == self.queryItemUserName && queryItemUserName.value != nil {
+                                Log.msg("queryItemUserName.value: \(queryItemUserName.value!)")
+                            }
                         }
                         
-                        callback?(invitationCode:queryItemCode.value!, userName: queryItemUserName.value)
+                        returnResult = true
+                        callback?(invitationCode:queryItemCode.value!, userName: username)
                     }
                 }
             }
-            
-            return true
         }
-        else {
-            return false
-        }
+
+        return returnResult
     }
 }

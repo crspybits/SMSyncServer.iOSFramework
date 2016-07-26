@@ -177,7 +177,7 @@ public class SMSyncServerUser {
     }
     
     public func signOut() {
-        self.delegate.lazyRef?.syncServerUserIsSignedIn
+        self.delegate.lazyRef?.syncServerSignOutUser()
     }
     
     // This method doesn't keep a reference to userCreds; it just allows the caller to create a new user on the server.
@@ -213,7 +213,11 @@ public class SMSyncServerUser {
         }
     }
     
-    public func createSharingInvitation(sharingType:SMSharingType, userCreds:SMUserCredentials?=nil, completion:((invitationCode:String?, error:NSError?)->(Void))?) {
+    public func createSharingInvitation(sharingType:SMSharingType, completion:((invitationCode:String?, error:NSError?)->(Void))?) {
+        
+        SMServerAPI.session.createSharingInvitation(sharingType: sharingType.rawValue) { invitationCode, apiResult in
+            completion?(invitationCode: invitationCode, error: apiResult.error)
+        }
     }
     
     // Optionally can have a currently signed in user. i.e., if you give userCreds, they will be used. Otherwise, the currently signed in user creds are used.
