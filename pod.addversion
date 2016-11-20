@@ -8,11 +8,11 @@ git tag '0.0.3'
 git push --tags
 
 # validate the pod, with downloading
-pod spec lint --allow-warnings
+pod spec lint --sources="https://github.com/crspybits/Specs.git,https://github.com/CocoaPods/Specs.git" --allow-warnings
 
 # Then, to push my podspec to my Specs repo:
 # See also: ls ~/.cocoapods/repos/
-# These need to be done from the relevant directory, e.g., SMCoreLib
+# These need to be done from the relevant directory, e.g., SMSyncServer
 
-pod repo push crspybits-specs SMCoreLib.podspec --allow-warnings
+pod repo push crspybits-specs SMSyncServer.podspec --allow-warnings
 
